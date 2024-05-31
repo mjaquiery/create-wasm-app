@@ -27,13 +27,33 @@
       margin: 2em;
     }
 
-    #status {
-      width: 100%;
+    #fps {
+      white-space: pre;
+      font-family: monospace;
+      padding-right: 2em;
     }
 
-    #status > div {
+    #status {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    #overview {
+      width: 75%;
+    }
+    #overview > div {
       display: flex;
       justify-content: space-evenly;
+      margin-top: 0.5em;
+    }
+
+    div#instructions {
+      justify-content: center;
+    }
+
+    #instructions kbd {
+      padding-left: 1em;
     }
 
     #controls {
@@ -49,11 +69,20 @@
 <body>
 <div id="main">
   <div id="status">
-    <div>
-      <div>Generation: <span id="generation">0</span></div>
-      <div>Population: <span id="population">0</span></div>
+    <div id="overview">
+      <div>
+        <div>Generation: <span id="generation">0</span></div>
+        <div>Population: <span id="population">0</span></div>
+      </div>
+      <div id="hovered_cell"><em>Hover a cell to see its status</em></div>
+      <div id="instructions">
+        Click to toggle a cell.
+        <kbd>Shift</kbd>+click to add a glider,
+        <kbd>Ctrl</kbd>+click to add a pulsar.
+        Glider orientation: <kbd id="orientation">↘</kbd>
+      </div>
     </div>
-    <div id="hovered_cell"><em>Hover a cell to see its status</em></div>
+    <div id="fps"></div>
   </div>
   <canvas id="game-of-life-canvas"></canvas>
   <div id="controls">
@@ -68,6 +97,7 @@
       <input type="checkbox" id="heatmap"/>
     </label>
     <button id="reset">Reset</button>
+    <button id="clear">Clear</button>
     <label>
       Life probability:
       <input type="number" id="life-probability" value="0.42" step="0.01" min="0" max="1"/>
