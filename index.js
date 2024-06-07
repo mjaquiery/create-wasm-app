@@ -21,6 +21,7 @@ const canvas = document.getElementById("game-of-life-canvas");
 const playPauseButton = document.getElementById("play-pause");
 const tickButton = document.getElementById("tick");
 const framerateInput = document.getElementById("framerate");
+const tpfInput = document.getElementById("tpf");
 const heatmapCheckbox = document.getElementById("heatmap");
 const resetButton = document.getElementById("reset");
 const clearButton = document.getElementById("clear");
@@ -149,9 +150,6 @@ const update_color_value = (current_value, darken = false) => Math.max(
 );
 
 function getCellColour(current_color, new_state) {
-    if (!heatmap) {
-        return new_state ? ALIVE_COLOR : DEAD_COLOR;
-    }
     const [r, g, b, a] = reset_heatmap?
         [Math.floor(255 / 2), Math.floor(255 / 2), Math.floor(255 / 2), 1] :
         current_color.match(/\d+/g).map(Number);
@@ -200,7 +198,7 @@ function drawCells(ctx) {
     } else {
         // Speed things up by drawing all alive/dead cells at once
         for (let status of [false, true]) {
-            ctx.fillStyle = getCellColour(null, status);
+            ctx.fillStyle = status? ALIVE_COLOR : DEAD_COLOR;
             for (let row = 0; row < universe.height(); row++) {
                 for (let col = 0; col < universe.width(); col++) {
                     const idx = universe.get_index(row, col);
@@ -282,7 +280,8 @@ max of last 100 = ${Math.round(max)}
 
 const renderLoop = () => {
     if (universe && !paused && performance.now() - lastFrameTime > 1000 / framerate) {
-        doTick();
+        for (let i = 0; i < tpfInput.value; i++)
+            doTick();
         fps.render();
     }
     requestAnimationFrame(renderLoop);

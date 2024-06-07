@@ -64,6 +64,18 @@
       justify-content: space-evenly;
       width: 100%;
     }
+
+    #speed {
+      display: grid;
+      justify-content: stretch;
+      grid-template-rows: repeat(1, auto);
+      grid-row-gap: 0.2em;
+    }
+
+    #speed label {
+      display: flex;
+      justify-content: space-between;
+    }
   </style>
 </head>
 <body>
@@ -88,10 +100,16 @@
   <div id="controls">
     <button id="play-pause">Resume</button>
     <button id="tick">Advance one tick</button>
-    <label>
-      Framerate:
-      <input type="number" id="framerate" value="100" width="5"/>
-    </label>
+    <div id="speed">
+      <label>
+        Framerate:
+        <input type="number" id="framerate" value="60" width="5" min="1"/>
+      </label>
+      <label>
+          Ticks per frame:
+          <input type="number" id="tpf" value="10" width="3" min="1"/>
+      </label>
+    </div>
     <label>
       Heatmap:
       <input type="checkbox" id="heatmap"/>
