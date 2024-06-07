@@ -8,7 +8,7 @@ const ALIVE_COLOR = "#000000";
 const DEAD_COLOR = "#FFFFFF";
 const HEATMAP_DELTA = 0.1;
 
-const ORIENTATIONS = ["↘","↙","↖","↗"]
+const ORIENTATIONS = ["↘","↙","↖","↗","?"]
 
 const generation = document.getElementById("generation");
 const population = document.getElementById("population");
@@ -51,7 +51,10 @@ function clickCell(event) {
     const row = Math.floor(y / (CELL_SIZE + GRID_THICKNESS));
     const col = Math.floor(x / (CELL_SIZE + GRID_THICKNESS));
     if (event.shiftKey) {
-        universe.add_glider(row, col, ORIENTATIONS.indexOf(orientation.innerText));
+        let o = ORIENTATIONS.indexOf(orientation.innerText);
+        if (o === ORIENTATIONS.indexOf("?"))
+            o = Math.floor(Math.random() * ORIENTATIONS.length);
+        universe.add_glider(row, col, o);
     } else if (event.ctrlKey) {
         universe.add_pulsar(row, col);
     } else {
@@ -82,7 +85,7 @@ function spawnUniverse(life_probability) {
     drawUniverse();
 }
 
-resetButton.addEventListener("click", spawnUniverse);
+resetButton.addEventListener("click", () => spawnUniverse());
 clearButton.addEventListener("click", () => spawnUniverse(0));
 
 playPauseButton.addEventListener("click", () => {
@@ -171,33 +174,54 @@ function drawCells(ctx) {
     );
 
     ctx.beginPath();
-    for (let row = 0; row < universe.height(); row++) {
-        for (let col = 0; col < universe.width(); col++) {
-            const idx = universe.get_index(row, col);
-            // Get old color from centre of cell in old image data
-            const data = ctx.getImageData(
-                col * (CELL_SIZE + GRID_THICKNESS) + GRID_THICKNESS + CELL_SIZE / 2,
-                row * (CELL_SIZE + GRID_THICKNESS) + GRID_THICKNESS + CELL_SIZE / 2,
-                1,
-                1
-            ).data;
-            const old_color = `rgba(${data[0]}, ${data[1]}, ${data[2]}, ${data[3] / 255})`;
-            ctx.fillStyle = getCellColour(old_color, bitIsSet(idx, cells));
-            ctx.fillRect(
-                col * (CELL_SIZE + GRID_THICKNESS) + GRID_THICKNESS,
-                row * (CELL_SIZE + GRID_THICKNESS) + GRID_THICKNESS,
-                CELL_SIZE,
-                CELL_SIZE
-            );
+
+    if (heatmap) {
+        for (let row = 0; row < universe.height(); row++) {
+            for (let col = 0; col < universe.width(); col++) {
+                const idx = universe.get_index(row, col);
+                // Get old color from centre of cell in old image data
+                const data = ctx.getImageData(
+                    col * (CELL_SIZE + GRID_THICKNESS) + GRID_THICKNESS + CELL_SIZE / 2,
+                    row * (CELL_SIZE + GRID_THICKNESS) + GRID_THICKNESS + CELL_SIZE / 2,
+                    1,
+                    1
+                ).data;
+                const old_color = `rgba(${data[0]}, ${data[1]}, ${data[2]}, ${data[3] / 255})`;
+                ctx.fillStyle = getCellColour(old_color, bitIsSet(idx, cells));
+                ctx.fillRect(
+                    col * (CELL_SIZE + GRID_THICKNESS) + GRID_THICKNESS,
+                    row * (CELL_SIZE + GRID_THICKNESS) + GRID_THICKNESS,
+                    CELL_SIZE,
+                    CELL_SIZE
+                );
+                ctx.stroke();
+            }
+        }
+    } else {
+        // Speed things up by drawing all alive/dead cells at once
+        for (let status of [false, true]) {
+            ctx.fillStyle = getCellColour(null, status);
+            for (let row = 0; row < universe.height(); row++) {
+                for (let col = 0; col < universe.width(); col++) {
+                    const idx = universe.get_index(row, col);
+                    if (bitIsSet(idx, cells) === status) {
+                        ctx.fillRect(
+                            col * (CELL_SIZE + GRID_THICKNESS) + GRID_THICKNESS,
+                            row * (CELL_SIZE + GRID_THICKNESS) + GRID_THICKNESS,
+                            CELL_SIZE,
+                            CELL_SIZE
+                        );
+                    }
+                }
+            }
+            ctx.stroke();
         }
     }
 
-    ctx.stroke();
 }
 
 function drawUniverse() {
-    const ctx = canvas.getContext("2d");
-    ctx.willReadFrequently = true;
+    const ctx = canvas.getContext("2d", {willReadFrequently: true});
     drawGrid(ctx);
     drawCells(ctx);
     generation.innerText = universe.generation();
